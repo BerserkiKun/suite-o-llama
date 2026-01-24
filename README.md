@@ -66,7 +66,7 @@ Suite-o-llama is pre-configured with two specialized Ollama models optimized for
   ollama pull qwen2.5-coder:7b
 - **Burp Suite**: Professional or Community Edition as of Jan 2026 (at the time of creating repository) or later.
 
-### Method 1: Pre-compiled Installation (Easiest)
+### Method 1: Pre-compiled Installation recommended
 
 1. **Download**: Get `suite-o-llama.jar` from the Releases page
 2. **Install in Burp**:
@@ -132,6 +132,14 @@ This ensures sensitive target data never leaves your environment, perfect for co
 4. **Generate**: Ctrl+Space for payload suggestions
 5. **Test**: Send payloads directly from interface
 6. **Iterate**: Analyze responses and refine
+
+## Screenshots
+<img width="1470" height="852" alt="img4 burp" src="https://github.com/user-attachments/assets/a81528e5-d050-47f4-8c3a-0ab28ad49d01" />
+<img width="1470" height="781" alt="img5 burp" src="https://github.com/user-attachments/assets/feb03089-c456-4955-9bfa-1f4d1c69b139" />
+<img width="1437" height="851" alt="img6 urp" src="https://github.com/user-attachments/assets/d46badd5-d402-410e-8f27-dd230c9b1979" />
+<img width="2940" height="1706" alt="img 7" src="https://github.com/user-attachments/assets/1c8e1cb0-c1a2-47c1-b0dc-a13a4c7ed1b6" />
+<img width="2940" height="1758" alt="img3" src="https://github.com/user-attachments/assets/3c81b90a-d142-4852-b3a6-725492624e1f" />
+
 
 ## Support Development
 
