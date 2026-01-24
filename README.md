@@ -57,12 +57,12 @@ Suite-o-llama is pre-configured with two specialized Ollama models optimized for
 
 For custom modifications:
 
-1. **Clone Repository**:
+1. **Clone Repository**: 
   ```bash
   git clone https://github.com/berserkikun/suite-o-llama.git
   cd suite-o-llama
 
-2. **Modify Files**:
+2.  **Modify Files**:
 - Edit `script.sh` for your system paths
 - Modify Java files for custom models/features
 - Adjust `ExtensionState.java` for different defaults
