@@ -1,5 +1,27 @@
 # Suite-o-llama: AI-Powered Burp Suite Extension for Penetration Testing
 
+## 📋 Table of Contents
+- [Overview](#overview)
+- [Deep Burp Suite Integration](#deep-burp-suite-integration)
+  - [Multi-Tab Integration](#multi-tab-integration)
+  - [Core Template Variables](#core-template-variables)
+- [Model Configuration](#model-configuration)
+- [Installation Guide](#installation-guide)
+  - [Prerequisites](#prerequisites)
+  - [Method 1: Pre-compiled Installation](#method-1-pre-compiled-installation-recommended)
+  - [Method 2: Custom Build Installation](#method-2-custom-build-installation)
+- [Local LLM Architecture](#local-llm-architecture)
+- [Key Features](#key-features)
+  - [Security & Privacy](#security--privacy)
+  - [Productivity Tools](#productivity-tools)
+  - [Performance](#performance)
+- [Usage Workflow](#usage-workflow)
+- [Screenshots](#screenshots)
+- [Support Development](#support-development)
+- [License & Attribution](#license--attribution)
+- [Community & Feedback](#community--feedback)
+
+
 ## Overview
 
 Suite-o-llama is a professional-grade Burp Suite extension that seamlessly integrates local Ollama LLM capabilities into your web security testing workflow. Designed specifically for penetration testers and bug bounty hunters, this tool transforms traditional security testing by adding AI-powered analysis and payload generation directly within Burp Suite's interface.
@@ -58,9 +80,8 @@ Suite-o-llama is pre-configured with two specialized Ollama models optimized for
 For custom modifications:
 
 1. **Clone Repository**: 
-  ```bash`
-  git clone https://github.com/berserkikun/suite-o-llama.git
-  cd suite-o-llama
+- git clone https://github.com/berserkikun/suite-o-llama.git
+- cd suite-o-llama
 
 2. **Modify Files**:
 - Edit `script.sh` for your system paths
@@ -68,10 +89,9 @@ For custom modifications:
 - Adjust `ExtensionState.java` for different defaults
 
 3. **Build**:
-  ```bash`
-  chmod +x script.sh
-  ./script.sh
-*Note: Build script works on macOS and Linux only. But you might need to change paths in the script file.*
+- chmod +x script.sh
+- ./script.sh
+- *Note: Build script works on macOS and Linux only. But you might need to change paths in the script file.*
 
 4. **Install**: Load the generated JAR from `dist/` directory into Burp
 
