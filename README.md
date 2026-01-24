@@ -58,17 +58,17 @@ Suite-o-llama is pre-configured with two specialized Ollama models optimized for
 For custom modifications:
 
 1. **Clone Repository**: 
-  ```bash
+  ```bash`
   git clone https://github.com/berserkikun/suite-o-llama.git
   cd suite-o-llama
 
-2.  **Modify Files**:
+2. **Modify Files**:
 - Edit `script.sh` for your system paths
 - Modify Java files for custom models/features
 - Adjust `ExtensionState.java` for different defaults
 
 3. **Build**:
-  ```bash
+  ```bash`
   chmod +x script.sh
   ./script.sh
 *Note: Build script works on macOS and Linux only. But you might need to change paths in the script file.*
