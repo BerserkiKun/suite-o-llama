@@ -68,7 +68,7 @@ Suite-o-llama is pre-configured with two specialized Ollama models optimized for
 
 ### Method 1: Pre-compiled Installation recommended
 
-1. **Download**: Get `suite-o-llama.jar` from the Releases page
+1. **Download**: Get stable release of `suite-o-llama.jar` from the [Releases page](https://github.com/BerserkiKun/suite-o-llama/releases)
 2. **Install in Burp**:
    ```bash
    Burp Suite → Extender → Extensions
