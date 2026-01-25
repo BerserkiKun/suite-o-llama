@@ -33,9 +33,9 @@ The extension integrates comprehensively across Burp Suite's ecosystem:
 ### Multi-Tab Integration
 - **Main Tab**: Dedicated "Suite-o-llama" tab for comprehensive analysis and payload generation
 - **Repeater Sub-tabs**: "Suite-o-llama AI" tabs appear automatically for both request and response analysis
-- **Proxy Context Menu**: Right-click any request in Proxy history → "Send to Suite-o-llama"
+- **Proxy Context Menu and Sub-tabs**: Right-click any request in Proxy history → "Send to Suite-o-llama". Also have a sub-tab of suite-o-llama AI in proxy-interception to generate payloads.
 - **Settings Tab**: Dedicated configuration panel for Ollama connection and model settings
-- **Intruder/Scanner Ready**: Core variables can be used in manual prompts across all Burp modules
+- **Prompts Ready**: Core variables can be used in manual prompts across all Burp modules
 
 ### Core Template Variables
 Use these powerful variables directly in your manual prompts within any Burp sub-tab:
@@ -53,7 +53,7 @@ Suite-o-llama is pre-configured with two specialized Ollama models optimized for
 1. **Analysis Model**: `qwen2.5:7b-instruct` - Specialized in vulnerability analysis and security assessment
 2. **Payload Model**: `qwen2.5-coder:7b` - Optimized for payload generation and exploit code
 
-**Custom Model Support**: While configured for these base models, advanced users can modify the source code to use higher-capacity models or different architectures. Customization requires manual compilation using the provided build script.
+**Custom Model Support**: While configured for these base models, advanced users can modify the source code to use higher-capacity models or different architectures. Customization requires manual compilation using the provided build script `suite.sh`.
 
 ## Installation Guide
 
@@ -70,28 +70,36 @@ Suite-o-llama is pre-configured with two specialized Ollama models optimized for
 
 1. **Download**: Get `suite-o-llama.jar` from the Releases page
 2. **Install in Burp**:
- - Burp Suite → Extender → Extensions
- - Click "Add" → Select the JAR file
+   ```bash
+   Burp Suite → Extender → Extensions
+   Click "Add" → Select the JAR file
+   Make sure JAVA is selected
 3. **Load Dependencies**: Load any additional required JAR files if prompted
-4. **Configure**: Go to "Suite-o-llama Settings" tab and verify connection
+4. **Configure**: Go to "Suite-o-llama Settings" tab and verify connection. Make sure your ollama is installed and up.
+   ```bash
+   # Check ollama health at http://localhost:11434 or http://127.0.0.1:11434
+   # if it is not running then try this to start ollama
+   ollama serve
 
 ### Method 2: Custom Build Installation
 
 For custom modifications:
 
 1. **Clone Repository**: 
-- git clone https://github.com/berserkikun/suite-o-llama.git
-- cd suite-o-llama
+   ```bash
+   git clone https://github.com/berserkikun/suite-o-llama.git
+   cd suite-o-llama
 
 2. **Modify Files**:
-- Edit `script.sh` for your system paths
-- Modify Java files for custom models/features
-- Adjust `ExtensionState.java` for different defaults
+   - Edit `suite.sh` for your system paths
+   - Modify Java files for custom models/features
+   - Adjust `ExtensionState.java` for different defaults
 
 3. **Build**:
-- chmod +x script.sh
-- ./script.sh
-- *Note: Build script works on macOS and Linux only. But you might need to change paths in the script file.*
+   ```bash
+   chmod +x suite.sh
+   ./suite.sh
+*Note: Build script `suite.sh` works on macOS and Linux only. But you might need to change paths in the script file.*
 
 4. **Install**: Load the generated JAR from `dist/` directory into Burp
 
@@ -99,7 +107,7 @@ For custom modifications:
 
 **Important**: Suite-o-llama works exclusively with your **local Ollama instance**:
 
-- **Complete Privacy**: All data stays on your machine
+- **Complete Privacy**: All data stays on your machine, nothing goes out
 - **No Cloud Services**: No ChatGPT, Gemini, Claude, or other cloud APIs
 - **No Subscriptions**: Zero API costs or usage fees
 - **Offline Ready**: Works without internet connection
@@ -115,9 +123,8 @@ This ensures sensitive target data never leaves your environment, perfect for co
 
 ### Productivity Tools
 - Async processing with cancellation
-- Ctrl+Space autocomplete for payloads
-- Pre-built security analysis prompts
-- Request/response context awareness
+- Pre-built security analysis prompts which can be manually adjusted
+- Request/response context awareness with `variables`
 
 ### Performance
 - Smart payload caching
@@ -129,9 +136,9 @@ This ensures sensitive target data never leaves your environment, perfect for co
 1. **Capture**: Proxy traffic through Burp
 2. **Send**: Right-click → "Send to Suite-o-llama"
 3. **Analyze**: Use preset or custom prompts
-4. **Generate**: Ctrl+Space for payload suggestions
+4. **Generate**: Write custom prompts for payload suggestions
 5. **Test**: Send payloads directly from interface
-6. **Iterate**: Analyze responses and refine
+6. **Iterate**: Analyze responses for sensitive data leakage etc
 
 ## Screenshots
 <img width="1470" height="852" alt="img4 burp" src="https://github.com/user-attachments/assets/a81528e5-d050-47f4-8c3a-0ab28ad49d01" />
