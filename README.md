@@ -109,7 +109,7 @@ Suite-o-llama is pre-configured with two specialized Ollama models optimized for
 - Model switching between analysis/payload modes
 
 ## Local LLM Architecture
-┌─────────────────────────────────────────────────────────────┐
+`┌─────────────────────────────────────────────────────────────┐
 │                    Burp Suite Professional                  │
 └───────────────────────────────┬─────────────────────────────┘
                                 │
@@ -139,7 +139,7 @@ Suite-o-llama is pre-configured with two specialized Ollama models optimized for
 │  │  ✓ No internet connection required                     │  │
 │  │  ✓ No API keys needed                                  │  │
 │  └───────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+└─────────────────────────────────────────────────────────────┘`
 
 ## Installation Guide
 
