@@ -110,30 +110,35 @@ Suite-o-llama is pre-configured with two specialized Ollama models optimized for
 
 ## Local LLM Architecture
 ┌─────────────────────────────────────────────────────────────┐
-│ Burp Suite Professional │
+│                    Burp Suite Professional                  │
 └───────────────────────────────┬─────────────────────────────┘
-│
+                                │
 ┌───────────────────────────────▼─────────────────────────────┐
-│ Suite-o-llama Extension v2.2.0 │
-│ ┌──────────────────────────────────────────────────────┐ │
-│ │ Tab 1: MainTabPanel │ Tab 2: MainTabPanel │ ... │ │
-│ │ ├─ OllamaClient │ ├─ OllamaClient │ │ │
-│ │ ├─ AutocompleteEngine│ ├─ AutocompleteEngine│ │ │
-│ │ └─ Message Editors │ └─ Message Editors │ │ │
-│ └──────────────────────────────────────────────────────┘ │
+│                Suite-o-llama Extension v2.2.0               │
+│                                                             │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │                    MainTabPanel(s)                    │  │
+│  │                                                       │  │
+│  │  Tab 1            Tab 2             ...               │  │
+│  │  ├─ OllamaClient  ├─ OllamaClient                     │  │
+│  │  ├─ Autocomplete  ├─ Autocomplete                     │  │
+│  │  └─ Msg Editors   └─ Msg Editors                      │  │
+│  └───────────────────────────────────────────────────────┘  │
 └───────────────────────────────┬─────────────────────────────┘
-│
+                                │
 ┌───────────────────────────────▼─────────────────────────────┐
-│ Ollama HTTP API (localhost:11434) │
+│               Ollama HTTP API (localhost:11434)             │
 └───────────────────────────────┬─────────────────────────────┘
-│
+                                │
 ┌───────────────────────────────▼─────────────────────────────┐
-│ Local LLM (Qwen2.5, Llama, etc.) │
-│ ┌─────────────────────────────────────────┐ │
-│ │ All processing happens locally │ │
-│ │ No internet connection required │ │
-│ │ No API keys needed │ │
-│ └─────────────────────────────────────────┘ │
+│                 Local Large Language Model                  │
+│               (Qwen2.5, LLaMA, etc.)                        │
+│                                                             │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  ✓ All processing happens locally                     │  │
+│  │  ✓ No internet connection required                    │  │
+│  │  ✓ No API keys needed                                 │  │
+│  └───────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
 
 ## Installation Guide
@@ -257,8 +262,7 @@ For custom modifications:
 
 If Suite-o-llama helps your security testing, consider supporting its development:
 
-**Star the Repository**
-Show your support by starring the project on GitHub!
+**Star the Repository**: Show your support by starring the project on GitHub!
 
 **Support Links**:
 - ☕ **Ko-fi**: [https://ko-fi.com/berserkikun](https://ko-fi.com/berserkikun)
