@@ -115,10 +115,10 @@ Suite-o-llama is pre-configured with two specialized Ollama models optimized for
 └───────────────────────────────┬─────────────────────────────┘
                                 │
 ┌───────────────────────────────▼─────────────────────────────┐
-│                Suite-o-llama Extension v2.2.0                │
+│                Suite-o-llama Extension v2.2.0               │
 │                                                             │
 │  ┌───────────────────────────────────────────────────────┐  │
-│  │                    MainTabPanel(s)                     │  │
+│  │                    MainTabPanel(s)                    │  │
 │  │                                                       │  │
 │  │  Tab 1            Tab 2             ...               │  │
 │  │  ├─ OllamaClient  ├─ OllamaClient                     │  │
@@ -128,17 +128,17 @@ Suite-o-llama is pre-configured with two specialized Ollama models optimized for
 └───────────────────────────────┬─────────────────────────────┘
                                 │
 ┌───────────────────────────────▼─────────────────────────────┐
-│               Ollama HTTP API (localhost:11434)              │
+│               Ollama HTTP API (localhost:11434)             │
 └───────────────────────────────┬─────────────────────────────┘
                                 │
 ┌───────────────────────────────▼─────────────────────────────┐
-│                 Local Large Language Model                   │
-│               (Qwen2.5, LLaMA, etc.)                         │
+│                 Local Large Language Model                  │
+│               (Qwen2.5, LLaMA, etc.)                        │
 │                                                             │
 │  ┌───────────────────────────────────────────────────────┐  │
-│  │  ✓ All processing happens locally                      │  │
-│  │  ✓ No internet connection required                     │  │
-│  │  ✓ No API keys needed                                  │  │
+│  │  ✓ All processing happens locally                     │  │
+│  │  ✓ No internet connection required                    │  │
+│  │  ✓ No API keys needed                                 │  │
 │  └───────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
 ```
