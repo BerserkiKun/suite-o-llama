@@ -10,9 +10,10 @@ public class BurpExtender implements IBurpExtender, ITab {
     private PrintWriter stderr;
     
     private ExtensionState state;
-    private MainTab mainTab;
+    private TabManager mainTab;
     private SettingsTab settingsTab;
-    
+    public static final String VERSION = "2.2.0";
+
     @Override
     public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks) {
         this.callbacks = callbacks;
@@ -21,9 +22,9 @@ public class BurpExtender implements IBurpExtender, ITab {
         this.stderr = new PrintWriter(callbacks.getStderr(), true);
         
         // Set extension name
-        callbacks.setExtensionName("Suite-o-llama");
+        callbacks.setExtensionName("Suite-o-llama v" + VERSION);
         
-        stdout.println("Suite-o-llama loading...");
+        stdout.println("Suite-o-llama v" + VERSION + " loading...");
         
         // Initialize shared state
         state = new ExtensionState(callbacks, helpers, stdout, stderr);
@@ -32,11 +33,11 @@ public class BurpExtender implements IBurpExtender, ITab {
         SwingUtilities.invokeLater(() -> {
             try {
                 // Create main UI components
-                // Create main UI components
                 OllamaClient ollamaClient = new OllamaClient(state);
                 PromptEngine promptEngine = new PromptEngine(state);
                 AutocompleteEngine autocompleteEngine = new AutocompleteEngine(state, ollamaClient, promptEngine);
-                mainTab = new MainTab(state, ollamaClient, promptEngine, autocompleteEngine);
+                TabManager tabManager = new TabManager(state, promptEngine);
+                mainTab = tabManager; // TabManager implements ITab, so this works. EARLIER -> mainTab = new MainTab(state, ollamaClient, promptEngine, autocompleteEngine);
                 settingsTab = new SettingsTab(state);
                 
                 // Register UI tabs
@@ -44,12 +45,12 @@ public class BurpExtender implements IBurpExtender, ITab {
                 callbacks.addSuiteTab(settingsTab);
                 
                 // Register context menu
-                callbacks.registerContextMenuFactory(new ContextMenuFactory(state, mainTab));
+                callbacks.registerContextMenuFactory(new ContextMenuFactory(state, tabManager)); // EARLIER -> callbacks.registerContextMenuFactory(new ContextMenuFactory(state, mainTab));
                 
                 // Register message editor tab factory for Repeater
-                callbacks.registerMessageEditorTabFactory(new MessageEditorTabFactory(state));
+                callbacks.registerMessageEditorTabFactory(new MessageEditorTabFactory(state));  // Kept for Repeater
                 
-                stdout.println("Suite-o-llama loaded successfully");
+                stdout.println("Suite-o-llama v" + VERSION + " loaded successfully");
                 stdout.println("Main tab: Suite-o-llama");
                 stdout.println("Settings tab: Suite-o-llama Settings");
                 stdout.println("Repeater sub-tabs: Suite-o-llama AI");

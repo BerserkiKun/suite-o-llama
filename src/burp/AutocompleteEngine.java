@@ -22,7 +22,7 @@ public class AutocompleteEngine {
             return t;
         });
         this.cache = new ConcurrentHashMap<>();
-        this.rateLimiter = new Semaphore(1); // Only one request at a time
+        this.rateLimiter = new Semaphore(3); // 3 for smoothness
     }
     
     public interface PayloadCallback {

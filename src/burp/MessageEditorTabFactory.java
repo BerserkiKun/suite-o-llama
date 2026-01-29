@@ -9,7 +9,7 @@ public class MessageEditorTabFactory implements IMessageEditorTabFactory {
     
     @Override
     public IMessageEditorTab createNewInstance(IMessageEditorController controller, boolean editable) {
-        // Create request tab (editable) or response tab (non-editable)
+        // ALWAYS CREATE NEW INSTANCES - never reuse
         if (editable) {
             return new RepeaterAITab(state, controller);
         } else {

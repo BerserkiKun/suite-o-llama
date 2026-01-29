@@ -10,18 +10,25 @@ public class RepeaterAITab implements IMessageEditorTab {
     private final OllamaClient ollamaClient;
     private final PromptEngine promptEngine;
     
+    // DECLARED ALL COMPONENTS AS FIELDS
     private JPanel panel;
     private JTextArea promptArea;
     private JTextArea responseArea;
     private JButton analyzeButton;
     private JButton cancelButton;
+    private JButton clearButton;
     private JComboBox<String> modelSelector;
     private byte[] currentMessage;
+
+    // PER-MESSAGE STATE
+    private volatile boolean isAnalyzing = false;
+    private volatile String requestIdentifier = "";
+    private volatile long requestStartTime = 0;
     
     public RepeaterAITab(ExtensionState state, IMessageEditorController controller) {
         this.state = state;
         this.controller = controller;
-        this.ollamaClient = new OllamaClient(state);
+        this.ollamaClient = new OllamaClient(state); // Each tab gets its own client
         this.promptEngine = new PromptEngine(state);
         
         initUI();
@@ -43,22 +50,57 @@ public class RepeaterAITab implements IMessageEditorTab {
         
         promptPanel.add(new JScrollPane(promptArea), BorderLayout.CENTER);
         
-        // Control panel
+        // Control panel - FIXED: Initialize all buttons as fields
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         
+        clearButton = new JButton("Clear");
+        clearButton.addActionListener(e -> clearResponse());
+
         analyzeButton = new JButton("Analyze with Ollama");
         analyzeButton.addActionListener(e -> analyzeRequest());
         
         cancelButton = new JButton("Cancel");
         cancelButton.setEnabled(false);
-        cancelButton.addActionListener(e -> ollamaClient.cancel());
+        cancelButton.addActionListener(e -> {
+            // Immediate UI feedback
+            responseArea.append("\n" + "=".repeat(60) + "\nCancelling request...\n" + "=".repeat(60) + "\n");
+            responseArea.setCaretPosition(responseArea.getDocument().getLength());
+
+            // Call the enhanced cancellation
+            ollamaClient.cancel();
+    
+            // Show cancellation in progress
+            cancelButton.setEnabled(false);
+            cancelButton.setText("Cancelling...");
+
+            // Re-enable after 1 seconds
+            new Thread(() -> {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ie) {}
+                SwingUtilities.invokeLater(() -> {
+                    cancelButton.setEnabled(true);
+                    cancelButton.setText("Cancel");
+                });
+            }).start();
+        });
         
         modelSelector = new JComboBox<>(new String[]{"Analysis Model", "Payload Model"});
         
+        controlPanel.add(clearButton);
         controlPanel.add(analyzeButton);
         controlPanel.add(cancelButton);
         controlPanel.add(new JLabel("  "));
         controlPanel.add(modelSelector);
+        
+        // DEBUG BUTTON - REMOVE AFTER TESTING
+        //JButton debugButton = new JButton("Debug Test");
+        //debugButton.addActionListener(e -> {
+        //    responseArea.append("\n=== DEBUG TEST ===\n");
+        //    responseArea.setCaretPosition(responseArea.getDocument().getLength());
+        //    state.getStdout().println("DEBUG: Button clicked, responseArea should update");
+        //});
+        //controlPanel.add(debugButton);
         
         promptPanel.add(controlPanel, BorderLayout.SOUTH);
         
@@ -80,61 +122,174 @@ public class RepeaterAITab implements IMessageEditorTab {
         panel.add(responsePanel, BorderLayout.CENTER);
     }
     
+    private void clearResponse() {
+        if (responseArea.getText() != null && !responseArea.getText().trim().isEmpty()) {
+            int result = JOptionPane.showConfirmDialog(panel,
+                "Clear LLM response history?\n\nRequest will be preserved.",
+                "Confirm Clear",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+        
+            if (result == JOptionPane.YES_OPTION) {
+                responseArea.setText("");
+                state.getStdout().println("Cleared LLM response in Repeater AI tab");
+            }
+        }
+    }
+
     private void analyzeRequest() {
-        if (currentMessage == null || currentMessage.length == 0) {
-            responseArea.setText("No request to analyze");
+        // Generate unique ID for this analysis session
+        final String analysisId = requestIdentifier + "-" + System.currentTimeMillis();
+        final byte[] messageToAnalyze = currentMessage; // Capture at time of click
+        
+        if (messageToAnalyze == null || messageToAnalyze.length == 0) {
+            responseArea.append("\n" + "=".repeat(60) + "\nNo request to analyze\n" + "=".repeat(60) + "\n");
             return;
         }
         
+        // Check if this is still the current message
+        if (!analysisId.startsWith(requestIdentifier)) {
+            state.getStdout().println("[RepeaterAITab] Analysis cancelled - message changed");
+            return;
+        }
+    
         // Check Ollama health
         if (!ollamaClient.checkHealth()) {
-            responseArea.setText("ERROR: Ollama disconnected\n\n" +
-                               "Ensure Ollama is running at: " + state.getOllamaEndpoint());
+            responseArea.append("\n" + "=".repeat(60) + "\nERROR: Ollama disconnected\nEnsure Ollama is running at: " + 
+                               state.getOllamaEndpoint() + "\n" + "=".repeat(60) + "\n");
             return;
         }
-        
+    
         IHttpService service = controller.getHttpService();
-        RequestContext context = new RequestContext(currentMessage, service);
-        
+        RequestContext context = new RequestContext(messageToAnalyze, service);
+    
         String prompt = promptEngine.processTemplate(promptArea.getText(), context);
         String model = modelSelector.getSelectedIndex() == 0 ? 
                       state.getAnalysisModel() : state.getPayloadModel();
-        
+    
         // Check model availability
         if (!ollamaClient.isModelAvailable(model)) {
-            responseArea.setText("ERROR: Model not available: " + model + "\n\n" +
-                               "Run: ollama pull " + model);
+            responseArea.append("\n" + "=".repeat(60) + "\nERROR: Model not available: " + model + 
+                               "\nRun: ollama pull " + model + "\n" + "=".repeat(60) + "\n");
             return;
         }
         
-        SwingUtilities.invokeLater(() -> {
-            analyzeButton.setEnabled(false);
-            cancelButton.setEnabled(true);
-            responseArea.setText("Analyzing with " + model + "...");
-        });
+        // Set analyzing state
+        isAnalyzing = true;
+        requestStartTime = System.currentTimeMillis();
         
+        // === UI UPDATE ===
+        SwingUtilities.invokeLater(() -> {
+            try {
+                // Only update if this is still the current analysis
+                if (isAnalyzing && analysisId.startsWith(requestIdentifier)) {
+                    analyzeButton.setEnabled(false);
+                    analyzeButton.setText("Analyzing..."); 
+                    cancelButton.setEnabled(true);
+                    clearButton.setEnabled(false);
+                    modelSelector.setEnabled(false);
+                    
+                    String separator = "=".repeat(60);
+                    String currentText = responseArea.getText();
+                    String newText = currentText + 
+                        "\n" + separator + 
+                        "\nAnalyzing with " + model + "..." + 
+                        "\n" + separator + "\n";
+                    
+                    responseArea.setText(newText);
+                    responseArea.setCaretPosition(responseArea.getDocument().getLength());
+                    responseArea.repaint();
+                }
+            } catch (Exception e) {
+                state.getStderr().println("[RepeaterAITab] UI update error: " + e.getMessage());
+            }
+        });
+    
+        // Create callback with analysis ID check
         ollamaClient.generateAsync(prompt, model, new OllamaClient.ResponseCallback() {
             @Override
             public void onSuccess(String response, long timeMs, int estimatedTokens) {
+                // Check if this callback is still valid for the current message
+                if (!analysisId.startsWith(requestIdentifier)) return;
+                
                 SwingUtilities.invokeLater(() -> {
-                    String result = String.format("Model: %s | Time: %.2fs | Tokens: ~%d\n%s\n\n%s",
-                        model, timeMs / 1000.0, estimatedTokens, "=".repeat(60), response);
-                    responseArea.setText(result);
-                    responseArea.setCaretPosition(0);
-                    analyzeButton.setEnabled(true);
-                    cancelButton.setEnabled(false);
+                    // Only update if we're still analyzing the same message
+                    if (isAnalyzing && analysisId.startsWith(requestIdentifier)) {
+                        double executionTimeSeconds = timeMs / 1000.0;
+                    
+                        String result = String.format(
+                            "\n%s\n✓ ANALYSIS COMPLETE\nModel: %s | Time: %.2fs | Tokens: ~%d\n%s\n\n%s\n%s\n",
+                            "=".repeat(60), model, executionTimeSeconds, estimatedTokens,
+                            "=".repeat(60), response, "=".repeat(60)
+                        );
+                    
+                        responseArea.append(result);
+                        responseArea.setCaretPosition(responseArea.getDocument().getLength());
+                        
+                        // RESTORE UI
+                        resetUIState();
+                        state.getStdout().println("[RepeaterAITab] Analysis complete for ID: " + analysisId);
+                    }
                 });
             }
-            
+        
             @Override
             public void onError(String error) {
+                // Check if this callback is still valid for the current message
+                if (!analysisId.startsWith(requestIdentifier)) return;
+                
+                final long errorTime = System.currentTimeMillis() - requestStartTime;
+                double errorTimeSeconds = errorTime / 1000.0;
+            
                 SwingUtilities.invokeLater(() -> {
-                    responseArea.setText("ERROR: " + error);
-                    analyzeButton.setEnabled(true);
-                    cancelButton.setEnabled(false);
+                    if (analysisId.startsWith(requestIdentifier)) {
+                        String errorMsg = String.format(
+                            "\n%s\n✗ ERROR (after %.2fs)\n%s\n\nCheck Ollama at: %s\n%s\n",
+                            "=".repeat(60), errorTimeSeconds, error, 
+                            state.getOllamaEndpoint(), "=".repeat(60)
+                        );
+                    
+                        responseArea.append(errorMsg);
+                        responseArea.setCaretPosition(responseArea.getDocument().getLength());
+                        
+                        // RESTORE UI
+                        resetUIState();
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(long cancelTimeMs) {
+                // Check if this callback is still valid for the current message
+                if (!analysisId.startsWith(requestIdentifier)) return;
+                
+                SwingUtilities.invokeLater(() -> {
+                    if (analysisId.startsWith(requestIdentifier)) {
+                        String separator = "=".repeat(60);
+                        String cancelMsg = String.format(
+                            "\n%s\n✗ REQUEST CANCELLED\nCancellation time: %.2fs\n%s\n",
+                            separator, cancelTimeMs / 1000.0, separator
+                        );
+        
+                        responseArea.append(cancelMsg);
+                        responseArea.setCaretPosition(responseArea.getDocument().getLength());
+                        
+                        // RESTORE UI
+                        resetUIState();
+                    }
                 });
             }
         });
+    }
+
+    private void resetUIState() {
+        isAnalyzing = false;
+        
+        analyzeButton.setEnabled(true);
+        analyzeButton.setText("Analyze with Ollama");
+        cancelButton.setEnabled(false);
+        clearButton.setEnabled(true);
+        modelSelector.setEnabled(true);
     }
     
     @Override
@@ -150,17 +305,47 @@ public class RepeaterAITab implements IMessageEditorTab {
     @Override
     public boolean isEnabled(byte[] content, boolean isRequest) {
         // Only show for requests
+        state.getStdout().println("[RepeaterAITab] isEnabled() called - isRequest: " + isRequest + ", content length: " + (content != null ? content.length : 0));
         return isRequest;
     }
     
     @Override
     public void setMessage(byte[] content, boolean isRequest) {
+        // RESET STATE BEFORE LOADING NEW MESSAGE
+        resetStateForNewMessage();
+        
         this.currentMessage = content;
+        state.getStdout().println("[RepeaterAITab] setMessage() called - length: " + (content != null ? content.length : 0));
+        
+        // Update UI based on new message
+        SwingUtilities.invokeLater(() -> {
+            if (content != null && content.length > 0 && isRequest) {
+                // Enable analyze button
+                analyzeButton.setEnabled(true);
+                analyzeButton.setText("Analyze with Ollama");
+            } else {
+                analyzeButton.setEnabled(false);
+            }
+            
+            // Clear any previous analysis
+            responseArea.setText("Click 'Analyze with Ollama' to start analysis");
+        });
     }
     
+    private void resetStateForNewMessage() {
+        // Cancel any ongoing analysis for previous message
+        if (isAnalyzing) {
+            ollamaClient.cancel();
+        }
+        
+        // Reset all state variables
+        isAnalyzing = false;
+        requestIdentifier = System.currentTimeMillis() + "-" + hashCode();
+        requestStartTime = 0;
+    }
+
     @Override
     public byte[] getMessage() {
-        // Non-destructive - return original message
         return currentMessage;
     }
     

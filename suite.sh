@@ -1,11 +1,11 @@
 #!/bin/bash
-# Clean Build Script for Suite-o-llama
-# Assumes files are already correctly named
+# Clean Build Script for Suite-o-llama v2.2 - UPDATED
+# Updated after removing HistoryAITab files (now 17 files total)
 
 set -e
 
 echo "=========================================="
-echo "Suite-o-llama Build Script"
+echo "Suite-o-llama v2.2 Build Script - UPDATED"
 echo "=========================================="
 echo ""
 
@@ -65,33 +65,117 @@ if [ "$JAVA_FILES_COUNT" -eq 0 ]; then
 fi
 
 echo "  ✓ Found $JAVA_FILES_COUNT Java files"
-echo "  Key files found:"
-ls "$SRC_DIR"/*.java | xargs basename -a | head -10
+echo "  Files found:"
+ls "$SRC_DIR"/*.java | xargs basename -a | sort | column -c 80
 
-# Check for critical files
-CRITICAL_FILES=("BurpExtender.java" "MainTab.java" "ExtensionState.java" "OllamaClient.java")
+# All 17 required files for v2.2
+echo ""
+echo "[3/7] Checking all 17 required files..."
+
+CRITICAL_FILES=(
+    # Core files
+    "BurpExtender.java"
+    "MainTabPanel.java"
+    "TabManager.java"
+    "ExtensionState.java"
+    "OllamaClient.java"
+    "PromptEngine.java"
+    
+    # UI Components
+    "SettingsTab.java"
+    "RepeaterAITab.java"
+    "RepeaterAIResponseTab.java"
+    "PromptManagerDialog.java"
+    
+    # Factories
+    "ContextMenuFactory.java"
+    "MessageEditorTabFactory.java"
+    
+    # Support/Utility
+    "AutocompleteContext.java"
+    "AutocompleteEngine.java"
+    "ContextTrimmer.java"
+    "RequestContext.java"
+    "UpdateChecker.java"
+
+)
+
+echo "  Checking ${#CRITICAL_FILES[@]} required files:"
 missing_files=()
+found_count=0
 for file in "${CRITICAL_FILES[@]}"; do
     if [ ! -f "$SRC_DIR/$file" ]; then
         missing_files+=("$file")
+        echo "    ✗ Missing: $file"
+    else
+        echo "    ✓ Found: $file"
+        ((found_count++))
     fi
 done
 
+echo ""
+echo "  Found $found_count of ${#CRITICAL_FILES[@]} required files"
+
 if [ ${#missing_files[@]} -gt 0 ]; then
-    echo "  ⚠️ Missing critical files: ${missing_files[*]}"
-    echo "  Please ensure all files are properly renamed"
-    exit 1
+    echo ""
+    echo "  ⚠️ Missing files:"
+    printf "    %s\n" "${missing_files[@]}"
+    
+    # Special handling for renamed files
+    if [[ " ${missing_files[*]} " == *"MainTabPanel.java"* ]] && [ -f "$SRC_DIR/MainTab.java" ]; then
+        echo ""
+        echo "  === RENAMING DETECTED ==="
+        echo "  MainTab.java exists but needs to be renamed to MainTabPanel.java"
+        read -p "  Auto-rename MainTab.java to MainTabPanel.java? (y/n): " rename_choice
+        if [ "$rename_choice" = "y" ] || [ "$rename_choice" = "Y" ]; then
+            mv "$SRC_DIR/MainTab.java" "$SRC_DIR/MainTabPanel.java"
+            echo "  ✓ Renamed MainTab.java to MainTabPanel.java"
+            
+            # Update class references in the file
+            sed -i '' 's/public class MainTab/public class MainTabPanel/g' "$SRC_DIR/MainTabPanel.java"
+            sed -i '' 's/class MainTab/class MainTabPanel/g' "$SRC_DIR/MainTabPanel.java"
+            
+            # Update references in BurpExtender.java
+            if [ -f "$SRC_DIR/BurpExtender.java" ]; then
+                sed -i '' 's/new MainTab(/new MainTabPanel(/g' "$SRC_DIR/BurpExtender.java"
+                echo "  ✓ Updated references in BurpExtender.java"
+            fi
+            
+            # Update in ContextMenuFactory.java
+            if [ -f "$SRC_DIR/ContextMenuFactory.java" ]; then
+                sed -i '' 's/MainTab mainTab/MainTabPanel mainTab/g' "$SRC_DIR/ContextMenuFactory.java"
+                echo "  ✓ Updated references in ContextMenuFactory.java"
+            fi
+            
+            # Remove from missing list
+            missing_files=("${missing_files[@]/MainTabPanel.java}")
+            ((found_count++))
+            
+            echo "  ✓ MainTabPanel.java now ready"
+        fi
+    fi
+    
+    if [ ${#missing_files[@]} -gt 0 ]; then
+        echo ""
+        echo "  ERROR: Missing ${#missing_files[@]} required files"
+        echo "  Build cannot proceed without all files"
+        exit 1
+    else
+        echo "  ✓ All required files accounted for"
+    fi
+else
+    echo "  ✓ All 17 required files found"
 fi
 
 # Create directories
 echo ""
-echo "[3/7] Creating build directories..."
+echo "[4/7] Creating build directories..."
 mkdir -p "$BUILD_DIR"
 mkdir -p "$LIB_DIR"
 
 # Download JSON library if not exists
 echo ""
-echo "[4/7] Downloading JSON library..."
+echo "[5/7] Downloading JSON library..."
 if [ ! -f "$JSON_JAR" ]; then
     JSON_URL="https://repo1.maven.org/maven2/org/json/json/$JSON_VERSION/json-$JSON_VERSION.jar"
     echo "  Downloading from: $JSON_URL"
@@ -117,7 +201,7 @@ fi
 
 # Compile
 echo ""
-echo "[5/7] Compiling Java source files..."
+echo "[6/7] Compiling Java source files..."
 cd "$BASE_DIR"
 
 # Get all Java files
@@ -143,6 +227,18 @@ else
     grep -A 2 -B 2 "error:" "$BASE_DIR/compile.log" | head -50
     echo ""
     echo "See full log: $BASE_DIR/compile.log"
+    
+    # Check for common errors
+    if grep -q "cannot find symbol.*MainTab" "$BASE_DIR/compile.log"; then
+        echo ""
+        echo "=== RENAMING ISSUE DETECTED ==="
+        echo "MainTab.java needs to be renamed to MainTabPanel.java"
+        echo "Or update references in:"
+        echo "  - BurpExtender.java"
+        echo "  - ContextMenuFactory.java"
+        echo "  - TabManager.java (if referencing)"
+    fi
+    
     exit 1
 fi
 
@@ -154,7 +250,7 @@ fi
 
 # Package
 echo ""
-echo "[6/7] Packaging JAR..."
+echo "[7/7] Packaging JAR..."
 
 # Create JAR with our classes
 cd "$BUILD_DIR"
@@ -180,7 +276,7 @@ echo "  ✓ Added JSON library to JAR"
 
 # Verify
 echo ""
-echo "[7/7] Verifying JAR..."
+echo "[8/7] Verifying JAR..."
 JAR_SIZE=$(du -h "$OUTPUT_JAR" | cut -f1)
 CLASS_COUNT=$(jar -tf "$OUTPUT_JAR" | grep "\.class$" | wc -l)
 
@@ -188,8 +284,11 @@ echo "  JAR file: $OUTPUT_JAR"
 echo "  Size: $JAR_SIZE"
 echo "  Total classes: $CLASS_COUNT"
 echo ""
-echo "  Main classes included:"
-jar -tf "$OUTPUT_JAR" | grep "^burp/.*\.class$" | sed 's/^/    /' | head -15
+echo "  v2.2 Core classes:"
+jar -tf "$OUTPUT_JAR" | grep -E "^(burp/TabManager|burp/UpdateChecker|burp/MainTabPanel)" | sed 's/^/    /' | sort
+echo ""
+echo "  All classes (17 files → ~$(($CLASS_COUNT)) classes):"
+jar -tf "$OUTPUT_JAR" | grep "^burp/.*\.class$" | sed 's/^/    /' | sort
 
 # Final check
 if [ ! -f "$OUTPUT_JAR" ]; then
@@ -203,6 +302,9 @@ echo "BUILD SUCCESSFUL! 🎉"
 echo "=========================================="
 echo ""
 echo "Output: $OUTPUT_JAR"
+echo "Version: v2.2.0"
+echo "Files compiled: $JAVA_FILES_COUNT"
+echo "Classes in JAR: $CLASS_COUNT"
 echo ""
 echo "To install in Burp Suite:"
 echo "  1. Open Burp Suite"
@@ -210,14 +312,4 @@ echo "  2. Go to Extender → Extensions"
 echo "  3. Click 'Add'"
 echo "  4. Select: $OUTPUT_JAR"
 echo ""
-echo "Prerequisites:"
-echo "  ✓ Ollama running: ollama serve"
-echo "  ✓ Models pulled: ollama pull qwen2.5:7b-instruct"
-echo "  ✓ Models pulled: ollama pull qwen2.5-coder:7b"
-echo ""
 echo "=========================================="
-
-# Optional: Clean up log file
-if [ -f "$BASE_DIR/compile.log" ]; then
-    rm "$BASE_DIR/compile.log"
-fi

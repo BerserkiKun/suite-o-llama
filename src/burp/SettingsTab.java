@@ -1,9 +1,13 @@
 package burp;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.awt.Desktop;
+import java.net.URI;
 
 public class SettingsTab extends JPanel implements ITab {
     private final ExtensionState state;
@@ -23,12 +27,18 @@ public class SettingsTab extends JPanel implements ITab {
     private JTextArea statusArea;
     private JList<String> modelList;
     private DefaultListModel<String> modelListModel;
+    private JButton newReleasesButton; 
+    private JButton githubButton; // replaces render
+    private JButton supportDevButton; 
+    private UpdateChecker updateChecker; 
     
     public SettingsTab(ExtensionState state) {
         this.state = state;
         this.testClient = new OllamaClient(state);
+        this.updateChecker = new UpdateChecker(state);
         initUI();
         loadSettings();
+        checkForUpdates();
     }
     
     private void initUI() {
@@ -57,6 +67,12 @@ public class SettingsTab extends JPanel implements ITab {
         testConnectionButton.addActionListener(e -> testConnection());
         connectionPanel.add(testConnectionButton, gbc);
         
+        // ADDED "New releases" button here 
+        gbc.gridx = 3;
+        newReleasesButton = new JButton("New releases");
+        newReleasesButton.addActionListener(e -> openGitHubReleases());
+        connectionPanel.add(newReleasesButton, gbc);
+
         connectionPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 
                                                      connectionPanel.getPreferredSize().height + 20));
         mainPanel.add(connectionPanel);
@@ -75,7 +91,7 @@ public class SettingsTab extends JPanel implements ITab {
         gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
         analysisModelField = new JTextField(25);
         modelPanel.add(analysisModelField, gbc);
-        
+
         gbc.gridx = 0; gbc.gridy = 1; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0;
         modelPanel.add(new JLabel("Payload Model:"), gbc);
         
@@ -214,41 +230,128 @@ public class SettingsTab extends JPanel implements ITab {
         testClient = new OllamaClient(state);
     }
     
-    private void testConnection() {
-        statusArea.setText("Testing connection to " + endpointField.getText() + "...\n");
-        testConnectionButton.setEnabled(false);
-        
+    // ========== NEW METHODS FOR UPDATE CHECKING ==========
+
+    private void checkForUpdates() {
         new Thread(() -> {
             try {
-                // Create temporary client with current endpoint
-                ExtensionState tempState = new ExtensionState(
-                    state.getCallbacks(), state.getHelpers(), 
-                    state.getStdout(), state.getStderr()
-                );
-                tempState.setOllamaEndpoint(endpointField.getText().trim());
-                OllamaClient tempClient = new OllamaClient(tempState);
-                
-                boolean connected = tempClient.checkHealth();
-                
-                SwingUtilities.invokeLater(() -> {
-                    if (connected) {
-                        statusArea.append("✓ Connection successful!\n");
-                        refreshModels();
-                    } else {
-                        statusArea.append("✗ Connection failed\n");
-                        statusArea.append("Make sure Ollama is running:\n");
-                        statusArea.append("  ollama serve\n");
-                    }
-                    testConnectionButton.setEnabled(true);
-                });
+                boolean hasUpdate = updateChecker.checkForUpdates();
+                if (hasUpdate) {
+                    SwingUtilities.invokeLater(() -> {
+                        newReleasesButton.setBackground(Color.YELLOW);
+                        newReleasesButton.setOpaque(true);
+                        newReleasesButton.setBorderPainted(true);
+                    statusArea.append("\nNew release available! Click 'New releases' button.");
+                    });
+                }
             } catch (Exception e) {
-                SwingUtilities.invokeLater(() -> {
-                    statusArea.append("✗ Error: " + e.getMessage() + "\n");
-                    testConnectionButton.setEnabled(true);
-                });
+            // Silent fail
             }
         }).start();
     }
+
+    private void openGitHubReleases() {
+    try {
+        // Clear status area
+        statusArea.setText("Checking for updates...\n");
+        
+        // Check if update is available
+        boolean hasUpdate = updateChecker.checkForUpdates();
+        
+        if (hasUpdate) {
+            statusArea.append("✓ New release available!\n");
+            statusArea.append("Opening GitHub releases page...\n");
+            
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(new URI("https://github.com/BerserkiKun/suite-o-llama/releases"));
+                statusArea.append("✓ GitHub releases page opened in browser.");
+            } else {
+                statusArea.append("✗ Desktop operations not supported on this system.");
+            }
+        } else {
+            statusArea.append("✓ You are already using the latest version.\n");
+            statusArea.append("Current version: " + state.getVersion() + "\n");
+            
+            // Optional: Show latest version info
+            JSONObject latestRelease = updateChecker.getLatestReleaseInfo();
+            if (latestRelease != null) {
+                String latestVersion = latestRelease.optString("tag_name", "unknown");
+                String publishedAt = latestRelease.optString("published_at", "");
+                statusArea.append("Latest version: " + latestVersion + "\n");
+                if (!publishedAt.isEmpty()) {
+                    statusArea.append("Published: " + publishedAt.substring(0, 10) + "\n");
+                }
+            }
+        }
+    } catch (Exception e) {
+        statusArea.append("✗ Error checking updates: " + e.getMessage());
+    }
+}
+
+    private void openGitHubProfile() {
+        try {
+            // Clear and show fresh status
+            statusArea.setText("Opening GitHub profile...\n");
+        
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(new URI("https://github.com/berserkikun"));
+                statusArea.append("✓ GitHub profile opened in browser.");
+            } else {
+                statusArea.append("✗ Desktop operations not supported on this system.");
+            }
+        } catch (Exception e) {
+            statusArea.append("\n✗ Error opening GitHub profile: " + e.getMessage());
+        }
+    }
+
+    private void openSupportPage() {
+        try {
+            // Clear and show fresh status
+            statusArea.setText("Opening Support Development page...\n");
+        
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(new URI("https://github.com/BerserkiKun/suite-o-llama?tab=readme-ov-file#support-development"));
+                statusArea.append("✓ Support Development page opened in browser.");
+            } else {
+                statusArea.append("✗ Desktop operations not supported on this system.");
+            }
+        } catch (Exception e) {
+            statusArea.append("\n✗ Error opening support page: " + e.getMessage());
+        }
+    }
+
+    private void testConnection() {
+    String endpoint = endpointField.getText().trim();
+    statusArea.setText("Testing connection to " + endpoint + "...\n");
+    
+    state.setOllamaEndpoint(endpoint);
+    testClient = new OllamaClient(state); // Recreate with new endpoint
+    
+    new Thread(() -> {
+        try {
+            boolean connected = testClient.checkHealth();
+            
+            SwingUtilities.invokeLater(() -> {
+                if (connected) {
+                    statusArea.append("✓ Connection successful!\n");
+                    statusArea.append("Ollama is running at: " + endpoint + "\n\n");
+                    
+                    // refreshModels will use the updated endpoint
+                    refreshModels();
+                    
+                } else {
+                    statusArea.append("✗ Connection failed\n");
+                    statusArea.append("Make sure Ollama is running:\n");
+                    statusArea.append("  ollama serve\n");
+                }
+            });
+            } catch (Exception e) {
+            SwingUtilities.invokeLater(() -> {
+                statusArea.append("✗ Error: " + e.getMessage() + "\n");
+                });
+            }
+        }).start();
+    }  
     
     private void refreshModels() {
         new Thread(() -> {

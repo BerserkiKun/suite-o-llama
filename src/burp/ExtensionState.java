@@ -22,7 +22,8 @@ public class ExtensionState {
     // Security settings
     private boolean redactAuthHeaders = true;
     private boolean redactCookies = true;
-    
+    private String extensionVersion;
+
     // Saved prompts
     private Map<String, String> savedPrompts = new HashMap<>();
     
@@ -36,7 +37,8 @@ public class ExtensionState {
         this.stdout = stdout;
         this.stderr = stderr;
         this.prefs = Preferences.userNodeForPackage(BurpExtender.class);
-        
+        this.extensionVersion = BurpExtender.VERSION;
+
         loadSettings();
         loadSavedPrompts();
     }
@@ -61,6 +63,7 @@ public class ExtensionState {
         prefs.putInt("max_context_size", maxContextSize);
         prefs.putBoolean("redact_auth", redactAuthHeaders);
         prefs.putBoolean("redact_cookies", redactCookies);
+        prefs.put("extension_version", extensionVersion);
     }
     
     private void loadSavedPrompts() {
@@ -77,28 +80,34 @@ public class ExtensionState {
             }
         }
         
-        // Add default prompts if none exist
-        if (savedPrompts.isEmpty()) {
-            savedPrompts.put("Vulnerability Analysis", 
-                "Analyze this HTTP request for security vulnerabilities:\n\n{{full_request}}\n\n" +
-                "Focus on: SQL injection, XSS, authentication issues, and input validation flaws.");
-            
-            savedPrompts.put("SQLi Detection",
-                "Check if this request is vulnerable to SQL injection:\n\n{{full_request}}\n\n" +
-                "Provide specific payloads for testing.");
-            
-            savedPrompts.put("XSS Analysis",
-                "Analyze this request for XSS vulnerabilities:\n\n{{full_request}}\n\n" +
-                "Suggest payloads for reflected, stored, and DOM-based XSS.");
-            
-            savedPrompts.put("Auth Bypass",
-                "Analyze authentication and authorization in this request:\n\n{{full_request}}\n\n" +
-                "Suggest bypass techniques.");
-            
-            savedPrompts.put("API Security",
-                "Review this API request for security issues:\n\n{{full_request}}\n\n" +
-                "Check: authentication, rate limiting, input validation, data exposure.");
-        }
+        // Update default prompts with new variable names
+    if (savedPrompts.isEmpty()) {
+        savedPrompts.put("Vulnerability Analysis", 
+            "Analyze this HTTP request for security vulnerabilities:\n\n{{full_request}}\n\n" +
+            "Focus on: SQL injection, XSS, authentication issues, and input validation flaws.");
+        
+        savedPrompts.put("Response Analysis", // NEW prompt
+            "Analyze this HTTP response:\n\n" +
+            "Response Headers:\n{{res_headers}}\n\n" +
+            "Response Body:\n{{res_body}}\n\n" +
+            "Look for: sensitive data exposure, security headers, error messages, and potential issues.");
+        
+        savedPrompts.put("SQLi Detection",
+            "Check if this request is vulnerable to SQL injection:\n\n{{full_request}}\n\n" +
+            "Provide specific payloads for testing.");
+        
+        savedPrompts.put("XSS Analysis",
+            "Analyze this request for XSS vulnerabilities:\n\n{{full_request}}\n\n" +
+            "Suggest payloads for reflected, stored, and DOM-based XSS.");
+        
+        savedPrompts.put("Auth Bypass",
+            "Analyze authentication and authorization in this request:\n\n{{full_request}}\n\n" +
+            "Suggest bypass techniques.");
+        
+        savedPrompts.put("API Security",
+            "Review this API request for security issues:\n\n{{full_request}}\n\n" +
+            "Check: authentication, rate limiting, input validation, data exposure.");
+    }
     }
     
     public void saveSavedPrompts() {
@@ -148,5 +157,14 @@ public class ExtensionState {
     public void removeSavedPrompt(String name) {
         savedPrompts.remove(name);
         saveSavedPrompts();
+    }
+    // Version management
+    public String getVersion() {
+        return extensionVersion;
+    }
+    
+    public void setVersion(String version) {
+        this.extensionVersion = version;
+        saveSettings(); // Persist version if needed
     }
 }
