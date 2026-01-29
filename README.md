@@ -1,3 +1,8 @@
+[![Burp Suite Extension](https://img.shields.io/badge/Burp%20Suite-Extension-orange)](https://portswigger.net/burp)
+[![Version](https://img.shields.io/badge/Version-2.2.0-blue)](https://github.com/BerserkiKun/suite-o-llama/releases)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Ollama](https://img.shields.io/badge/Ollama-Required-yellow)](https://ollama.com)
+
 # Suite-o-llama: AI-Powered Burp Suite Extension for Penetration Testing
 
 ## 📋 Table of Contents
