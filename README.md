@@ -10,6 +10,7 @@
 - [Deep Burp Suite Integration](#deep-burp-suite-integration)
   - [Multi-Tab Integration](#multi-tab-integration)
   - [Tab Management Features](#tab-management-features)
+  - [True Conversational AI](#true-conversational-ai)
   - [Core Template Variables](#core-template-variables)
 - [Model Configuration](#model-configuration)
   - [Default Models](#default-models)
@@ -49,6 +50,8 @@ Suite-o-llama is a professional-grade Burp Suite extension that seamlessly integ
 - **Enhanced cancellation** with real-time feedback
 - **Response analysis** with dedicated template variables
 - **Version update checking** via GitHub API
+- **True multi-turn conversational AI** with persistent context across all AI tabs
+- **Built-in server response time (ms)** tracking in the suite-o-llama main tab
 
 ## Deep Burp Suite Integration
 
@@ -72,6 +75,17 @@ Suite-o-llama v2.2.0 features a complete multi-tab interface that mimics Burp Su
 - **Smart Reuse**: Initial empty tab gets reused automatically
 - **Batch Processing**: Send multiple requests from context menu
 - **State Isolation**: Each tab maintains independent Ollama connections
+
+### True Conversational AI
+Suite-o-llama now supports real multi-turn conversations with Ollama, ensuring prompts and responses are part of a continuous session rather than isolated requests:
+
+- **Persistent Context:** Follow-up prompts correctly reference prior user inputs and LLM responses with up to 30 queries reference
+- **Session-Based Conversations:** AI interactions maintain conversational state across multiple actions
+- **Cross-Tab Continuity:** Conversation state persists across Repeater AI, Response AI, and suite-o-llama main tab
+- **Non-Destructive Sessions:** Conversation history and prompts remain visible even after session termination
+- **Smart Session Timeout:** Inactive sessions automatically close after 10 minutes without clearing existing data
+- **UI-State Awareness:** Ongoing conversations remain active across tab switches and request resends
+
 
 ### Core Template Variables
 The system uses smart templating with these variables (v2.2.0 updated):
