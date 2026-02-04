@@ -129,7 +129,7 @@ Suite-o-llama is pre-configured with two specialized Ollama models optimized for
 └───────────────────────────────┬─────────────────────────────┘
                                 │
 ┌───────────────────────────────▼─────────────────────────────┐
-│                Suite-o-llama Extension v2.2.0               │
+│                Suite-o-llama Extension v2.2.1               │
 │                                                             │
 │  ┌───────────────────────────────────────────────────────┐  │
 │  │                    MainTabPanel(s)                    │  │
