@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.*;
 import org.json.*;
 
+
 public class OllamaClient {
     private final ExtensionState state;
     private final ExecutorService executor;
@@ -34,6 +35,10 @@ public class OllamaClient {
     }
     
     public void generateAsync(String prompt, String model, ResponseCallback callback) {
+        generateAsync(prompt, model, null, callback);
+    }
+
+    public void generateAsync(String prompt, String model, String conversationContext, ResponseCallback callback) {
         if (currentRequest != null && !currentRequest.isDone()) {
             currentRequest.cancel(true);
         }
@@ -42,10 +47,18 @@ public class OllamaClient {
         cancelled = false;
         streaming = false;
         
+        // Augment prompt with conversation context if provided
+        final String augmentedPrompt;
+        if (conversationContext != null && !conversationContext.trim().isEmpty()) {
+            augmentedPrompt = conversationContext + "\n\n" + prompt;
+        } else {
+            augmentedPrompt = prompt;
+        }
+        
         currentRequest = executor.submit(() -> {
             try {
                 long startTime = System.currentTimeMillis();
-                String response = generate(prompt, model);
+                String response = generate(augmentedPrompt, model);
                 long elapsed = System.currentTimeMillis() - startTime;
                 int tokens = estimateTokens(response);
                 
@@ -144,6 +157,13 @@ public class OllamaClient {
             currentConnection = null;
             streaming = false;
         }
+    }
+
+    public String generateWithContext(String prompt, String model, String conversationContext) throws Exception {
+        if (conversationContext != null && !conversationContext.trim().isEmpty()) {
+            prompt = conversationContext + "\n\n" + prompt;
+        }
+        return generate(prompt, model);
     }
 
     // method to read error stream

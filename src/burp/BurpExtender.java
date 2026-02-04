@@ -12,7 +12,7 @@ public class BurpExtender implements IBurpExtender, ITab {
     private ExtensionState state;
     private TabManager mainTab;
     private SettingsTab settingsTab;
-    public static final String VERSION = "2.2.0";
+    public static final String VERSION = "2.2.1";
 
     @Override
     public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks) {

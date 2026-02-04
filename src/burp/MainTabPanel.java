@@ -7,7 +7,9 @@ import java.awt.*;
 import java.awt.event.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import javax.swing.JScrollPane; 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService; 
+import java.util.concurrent.TimeUnit;
 
 public class MainTabPanel extends JPanel implements IMessageEditorController {
 
@@ -28,6 +30,7 @@ public class MainTabPanel extends JPanel implements IMessageEditorController {
     private JButton supportDevBtn;
     private JButton clearBtn;
     private JButton cancelBtn;
+    private JLabel responseTimeLabel; // ADD: For displaying server response time
 
     private IHttpService currentService;
     private byte[] currentRequest;
@@ -35,6 +38,15 @@ public class MainTabPanel extends JPanel implements IMessageEditorController {
     private AutocompleteContext currentContext;
 
     private boolean initialEmptyTab = false; // NEW: Track if this is initial empty tab
+
+    private ConversationSession conversationSession;
+    private static final ScheduledExecutorService timeoutScheduler = 
+        Executors.newScheduledThreadPool(1, r -> {
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            t.setName("Conversation-Timeout-Checker-Main");
+            return t;
+        });
 
     public MainTabPanel(ExtensionState state, PromptEngine promptEngine) {
         this.state = state;
@@ -137,6 +149,14 @@ public class MainTabPanel extends JPanel implements IMessageEditorController {
         panel.add(cancelBtn); // NEW
         panel.add(githubBtn);
         panel.add(supportDevBtn);
+
+        // ADD: Response time label
+        responseTimeLabel = new JLabel("");
+        responseTimeLabel.setForeground(Color.GRAY);
+        responseTimeLabel.setFont(responseTimeLabel.getFont().deriveFont(Font.PLAIN, 11f));
+        responseTimeLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
+        responseTimeLabel.setToolTipText("Server response time");
+        panel.add(responseTimeLabel);
 
         return panel;
     }
@@ -295,10 +315,17 @@ public class MainTabPanel extends JPanel implements IMessageEditorController {
         currentRequest = editedRequest; // FIX: Update stored reference
         sendToServerBtn.setEnabled(false);
         sendToServerBtn.setText("Sending...");
-    
+        
+        // Clear previous response time
+        if (responseTimeLabel != null) {
+            responseTimeLabel.setText("");
+        }
+
         new Thread(() -> {
+            long startTime = System.currentTimeMillis(); // ADD: Start timing
             try {
                 IHttpRequestResponse resp = state.getCallbacks().makeHttpRequest(currentService, editedRequest);
+                long responseTime = System.currentTimeMillis() - startTime; // ADD: Calculate elapsed time
             
                 SwingUtilities.invokeLater(() -> {
                     currentResponse = resp.getResponse();
@@ -309,12 +336,25 @@ public class MainTabPanel extends JPanel implements IMessageEditorController {
                     if (resp != null) {
                         currentContext = AutocompleteContext.from(resp);
                     }
+                    
+                    // ADD: Display response time
+                    if (responseTimeLabel != null) {
+                        responseTimeLabel.setText(responseTime + " ms");
+                        responseTimeLabel.setToolTipText("Server response time: " + responseTime + " milliseconds");
+                    }
                 });
             } catch (Exception e) {
+                long errorTime = System.currentTimeMillis() - startTime; // ADD: Timing even on error
                 SwingUtilities.invokeLater(() -> {
                     JOptionPane.showMessageDialog(MainTabPanel.this, "Request failed: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                     sendToServerBtn.setEnabled(true);
                     sendToServerBtn.setText("Send to Server");
+                    
+                    // ADD: Display error timing
+                    if (responseTimeLabel != null) {
+                        responseTimeLabel.setText("Error (" + errorTime + " ms)");
+                        responseTimeLabel.setToolTipText("Request failed after " + errorTime + " milliseconds");
+                    }
                 });
             }
         }).start();
@@ -336,9 +376,26 @@ public class MainTabPanel extends JPanel implements IMessageEditorController {
                 Thread.currentThread().interrupt();
             }
             
-            RequestContext context = new RequestContext(editedRequest, currentService); // FIX: Use edited request
+            RequestContext context;
+                if (currentResponse != null && currentResponse.length > 0) {
+                    context = new RequestContext(editedRequest, currentResponse, currentService); // save current response in context
+                } else {
+                    context = new RequestContext(editedRequest, currentService); // use edited request
+                }
             String finalPrompt = promptEngine.createAnalysisPrompt(context, prompt);
             String model = state.getAnalysisModel();
+
+            // Initialize conversation session if null
+            if (conversationSession == null || conversationSession.isTerminated()) {
+                conversationSession = new ConversationSession();
+                conversationSession.scheduleTimeout(timeoutScheduler, () -> {
+                    state.getStdout().println("[MainTabPanel] Conversation session timed out due to inactivity");
+                });
+            }
+                
+            // Get conversation context for this prompt
+            String conversationContext = conversationSession.buildConversationPrompt("");
+
             
             // ========== FIX: BATCH ALL INITIAL UI UPDATES TOGETHER ==========
             SwingUtilities.invokeLater(() -> {
@@ -401,6 +458,12 @@ public class MainTabPanel extends JPanel implements IMessageEditorController {
                             cancelBtn.setEnabled(false);
                             cancelBtn.setText("Cancel");
                         }
+
+                        // Add to conversation history
+                        if (conversationSession != null && !conversationSession.isTerminated()) {
+                            conversationSession.addExchange(finalPrompt, response);
+                        }
+
                     });
                 }
                 
@@ -467,7 +530,7 @@ public class MainTabPanel extends JPanel implements IMessageEditorController {
             };
             
             // Start the generation
-            ollamaClient.generateAsync(finalPrompt, model, callback);
+            ollamaClient.generateAsync(finalPrompt, model, conversationContext, callback);
         }
 
     // ================= CHANGED: clearLLMResponse() instead of clearAll() =================
@@ -488,6 +551,12 @@ public class MainTabPanel extends JPanel implements IMessageEditorController {
         // Clear only LLM response
         llmResponseArea.setText("");
         state.getStdout().println("Cleared LLM response history");
+
+        // ADD: Clear response time display
+        if (responseTimeLabel != null) {
+            responseTimeLabel.setText("");
+            responseTimeLabel.setToolTipText(null);
+        }
     }
 
     // ================= IMessageEditorController =================

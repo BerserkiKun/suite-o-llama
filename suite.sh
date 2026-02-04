@@ -1,11 +1,11 @@
 #!/bin/bash
-# Clean Build Script for Suite-o-llama v2.2 - UPDATED
-# Updated after removing HistoryAITab files (now 17 files total)
+# Clean Build Script for Suite-o-llama v2.2.1 - UPDATED
+# Updated after removing HistoryAITab files (now 18 files total)
 
 set -e
 
 echo "=========================================="
-echo "Suite-o-llama v2.2 Build Script - UPDATED"
+echo "Suite-o-llama v2.2.1 Build Script - UPDATED"
 echo "=========================================="
 echo ""
 
@@ -41,7 +41,7 @@ if [ ! -f "$BURP_JAR" ]; then
     fi
 fi
 
-echo "[1/7] Checking prerequisites..."
+echo "[1/8] Checking prerequisites..."
 echo "  Java version:"
 java -version 2>&1 | head -1
 echo "  Burp JAR: $BURP_JAR"
@@ -49,7 +49,7 @@ echo "  Source directory: $SRC_DIR"
 
 # Check source files
 echo ""
-echo "[2/7] Checking Java files..."
+echo "[2/8] Checking Java files..."
 if [ ! -d "$SRC_DIR" ]; then
     echo "  ✗ Source directory not found: $SRC_DIR"
     exit 1
@@ -68,9 +68,9 @@ echo "  ✓ Found $JAVA_FILES_COUNT Java files"
 echo "  Files found:"
 ls "$SRC_DIR"/*.java | xargs basename -a | sort | column -c 80
 
-# All 17 required files for v2.2
+# All 18 required files for v2.2
 echo ""
-echo "[3/7] Checking all 17 required files..."
+echo "[3/8] Checking all 18 required files..."
 
 CRITICAL_FILES=(
     # Core files
@@ -97,6 +97,9 @@ CRITICAL_FILES=(
     "ContextTrimmer.java"
     "RequestContext.java"
     "UpdateChecker.java"
+
+    # Session handler
+    "ConversationSession.java"
 
 )
 
@@ -164,18 +167,18 @@ if [ ${#missing_files[@]} -gt 0 ]; then
         echo "  ✓ All required files accounted for"
     fi
 else
-    echo "  ✓ All 17 required files found"
+    echo "  ✓ All 18 required files found"
 fi
 
 # Create directories
 echo ""
-echo "[4/7] Creating build directories..."
+echo "[4/8] Creating build directories..."
 mkdir -p "$BUILD_DIR"
 mkdir -p "$LIB_DIR"
 
 # Download JSON library if not exists
 echo ""
-echo "[5/7] Downloading JSON library..."
+echo "[5/8] Downloading JSON library..."
 if [ ! -f "$JSON_JAR" ]; then
     JSON_URL="https://repo1.maven.org/maven2/org/json/json/$JSON_VERSION/json-$JSON_VERSION.jar"
     echo "  Downloading from: $JSON_URL"
@@ -201,7 +204,7 @@ fi
 
 # Compile
 echo ""
-echo "[6/7] Compiling Java source files..."
+echo "[6/8] Compiling Java source files..."
 cd "$BASE_DIR"
 
 # Get all Java files
@@ -250,7 +253,7 @@ fi
 
 # Package
 echo ""
-echo "[7/7] Packaging JAR..."
+echo "[7/8] Packaging JAR..."
 
 # Create JAR with our classes
 cd "$BUILD_DIR"
@@ -276,7 +279,7 @@ echo "  ✓ Added JSON library to JAR"
 
 # Verify
 echo ""
-echo "[8/7] Verifying JAR..."
+echo "[8/8] Verifying JAR..."
 JAR_SIZE=$(du -h "$OUTPUT_JAR" | cut -f1)
 CLASS_COUNT=$(jar -tf "$OUTPUT_JAR" | grep "\.class$" | wc -l)
 
@@ -287,7 +290,7 @@ echo ""
 echo "  v2.2 Core classes:"
 jar -tf "$OUTPUT_JAR" | grep -E "^(burp/TabManager|burp/UpdateChecker|burp/MainTabPanel)" | sed 's/^/    /' | sort
 echo ""
-echo "  All classes (17 files → ~$(($CLASS_COUNT)) classes):"
+echo "  All classes (18 files → ~$(($CLASS_COUNT)) classes):"
 jar -tf "$OUTPUT_JAR" | grep "^burp/.*\.class$" | sed 's/^/    /' | sort
 
 # Final check
@@ -302,7 +305,7 @@ echo "BUILD SUCCESSFUL! 🎉"
 echo "=========================================="
 echo ""
 echo "Output: $OUTPUT_JAR"
-echo "Version: v2.2.0"
+echo "Version: v2.2.1"
 echo "Files compiled: $JAVA_FILES_COUNT"
 echo "Classes in JAR: $CLASS_COUNT"
 echo ""
