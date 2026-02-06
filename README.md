@@ -293,17 +293,7 @@ Found a bug? Have a feature request?
 - **Bug Reports**: Include Burp version, Ollama version, and reproduction steps
 - **Feature Requests**: Describe use case and expected behavior
 - **Security Issues**: Report privately on Discord DM - @BerserkiKun
-
-## License & Attribution
-
-- **Author**: BerserkiKun
-
-Please respect the following:
-- **Do not re-upload or repackage** as your own work
-- **Do not remove attribution** or authorship credits
-- **If you create a port in another language**, link back to this repository
-- **Modifications are encouraged** but maintain clear attribution
-
+ 
 ## Community & Feedback
 
 Community feedback is welcome. The local-first design ensures you can use Suite-o-llama confidently in sensitive environments while benefiting from AI-assisted security testing.
@@ -311,3 +301,17 @@ Community feedback is welcome. The local-first design ensures you can use Suite-
 ---
 
 **Transform your penetration testing with AI-powered analysis while keeping complete control over your data.**
+
+---
+
+<div align="center">
+
+**Built with ❤️ by [BerserkiKun](https://github.com/berserkikun)**
+
+[![GitHub Stars](https://img.shields.io/github/stars/berserkikun/post-o-llama?style=social)](https://github.com/berserkikun/post-o-llama/stargazers)
+[![GitHub Issues](https://img.shields.io/github/issues/berserkikun/post-o-llama)](https://github.com/berserkikun/post-o-llama/issues)
+[![GitHub Forks](https://img.shields.io/github/forks/berserkikun/post-o-llama?style=social)](https://github.com/berserkikun/post-o-llama/network/members)
+
+**⭐ Star this repo if you find it useful!**
+
+</div>
