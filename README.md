@@ -34,7 +34,6 @@
 - [Screenshots](#screenshots)
 - [Support Development](#support-development)
 - [Report Issues](#report-issues)
-- [License & Attribution](#license--attribution)
 - [Community & Feedback](#community--feedback)
 
 ## Overview
@@ -300,17 +299,13 @@ Community feedback is welcome. The local-first design ensures you can use Suite-
 
 ---
 
-**Transform your penetration testing with AI-powered analysis while keeping complete control over your data.**
-
----
-
 <div align="center">
 
 **Built with ❤️ by [BerserkiKun](https://github.com/berserkikun)**
 
-[![GitHub Stars](https://img.shields.io/github/stars/berserkikun/post-o-llama?style=social)](https://github.com/berserkikun/post-o-llama/stargazers)
-[![GitHub Issues](https://img.shields.io/github/issues/berserkikun/post-o-llama)](https://github.com/berserkikun/post-o-llama/issues)
-[![GitHub Forks](https://img.shields.io/github/forks/berserkikun/post-o-llama?style=social)](https://github.com/berserkikun/post-o-llama/network/members)
+[![GitHub Stars](https://img.shields.io/github/stars/berserkikun/suite-o-llama?style=social)](https://github.com/berserkikun/suite-o-llama/stargazers)
+[![GitHub Issues](https://img.shields.io/github/issues/berserkikun/suite-o-llama)](https://github.com/berserkikun/suite-o-llama/issues)
+[![GitHub Forks](https://img.shields.io/github/forks/berserkikun/suite-o-llama?style=social)](https://github.com/berserkikun/suite-o-llama/network/members)
 
 **⭐ Star this repo if you find it useful!**
 
