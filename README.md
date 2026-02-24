@@ -266,11 +266,10 @@ For custom modifications:
 - **Update Checks**: "New releases" button shows available updates
 
 ## Screenshots
-<img width="1470" height="852" alt="img4 burp" src="https://github.com/user-attachments/assets/a81528e5-d050-47f4-8c3a-0ab28ad49d01" />
-<img width="1470" height="781" alt="img5 burp" src="https://github.com/user-attachments/assets/feb03089-c456-4955-9bfa-1f4d1c69b139" />
-<img width="1437" height="851" alt="img6 urp" src="https://github.com/user-attachments/assets/d46badd5-d402-410e-8f27-dd230c9b1979" />
-<img width="2940" height="1706" alt="img 7" src="https://github.com/user-attachments/assets/1c8e1cb0-c1a2-47c1-b0dc-a13a4c7ed1b6" />
-<img width="2940" height="1758" alt="img3" src="https://github.com/user-attachments/assets/3c81b90a-d142-4852-b3a6-725492624e1f" />
+| | | |
+|:---:|:---:|:---:|
+| <img width="1470" height="852" alt="img4 burp" src="https://github.com/user-attachments/assets/a81528e5-d050-47f4-8c3a-0ab28ad49d01" /> | <img width="1470" height="781" alt="img5 burp" src="https://github.com/user-attachments/assets/feb03089-c456-4955-9bfa-1f4d1c69b139" /> | <img width="1437" height="851" alt="img6 urp" src="https://github.com/user-attachments/assets/d46badd5-d402-410e-8f27-dd230c9b1979" /> |
+| <img width="2940" height="1706" alt="img 7" src="https://github.com/user-attachments/assets/1c8e1cb0-c1a2-47c1-b0dc-a13a4c7ed1b6" /> | <img width="2940" height="1758" alt="img3" src="https://github.com/user-attachments/assets/3c81b90a-d142-4852-b3a6-725492624e1f" /> | |
 
 
 ## Support Development
