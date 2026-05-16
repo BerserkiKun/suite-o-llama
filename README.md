@@ -1,6 +1,8 @@
 [![Burp Suite Extension](https://img.shields.io/badge/Burp%20Suite-Extension-orange)](https://portswigger.net/burp)
-[![Version](https://img.shields.io/badge/Version-2.2.1-blue)](https://github.com/BerserkiKun/suite-o-llama/releases)
+[![Version](https://img.shields.io/badge/Version-2.3.0-blue)](https://github.com/VermaOps/suite-o-llama/releases)
 [![Ollama](https://img.shields.io/badge/Ollama-Required-yellow)](https://ollama.com)
+[![OpenAI](https://img.shields.io/badge/OpenAI-Supported-green)](https://openai.com)
+[![Claude](https://img.shields.io/badge/Claude-Supported-purple)](https://anthropic.com)
 
 # Suite-o-llama: AI-Powered Burp Suite Extension for Penetration Testing
 
@@ -13,10 +15,9 @@
   - [True Conversational AI](#true-conversational-ai)
   - [Core Template Variables](#core-template-variables)
 - [Model Configuration](#model-configuration)
-  - [Default Models](#default-models)
+  - [Provider Settings](#provider-settings)
   - [Configuration Options](#configuration-options)
-  - [Model Compatibility](#model-compatibility)
-- [Local LLM Architecture](#local-llm-architecture)
+- [Architecture](#architecture)
 - [Installation Guide](#installation-guide)
   - [Prerequisites](#prerequisites)
   - [Method 1: Pre-compiled Installation](#method-1-pre-compiled-installation-recommended)
@@ -38,12 +39,18 @@
 
 ## Overview
 
-Suite-o-llama is a professional-grade Burp Suite extension that seamlessly integrates local Ollama LLM capabilities into your web security testing workflow. Designed specifically for penetration testers and bug bounty hunters, this tool transforms traditional security testing by adding AI-powered analysis and payload generation directly within Burp Suite's interface.
+**Suite-o-llama** is a professional-grade Burp Suite extension that seamlessly integrates multiple AI providers (Ollama, OpenAI, Claude) into your web security testing workflow. Designed specifically for penetration testers and bug bounty hunters, this tool transforms traditional security testing by adding AI-powered analysis and payload generation directly within Burp Suite's interface.
+
+**Choose your AI provider:**
+- **Ollama** (100% Free, Local): Complete privacy, no API keys, runs entirely on your machine
+- **OpenAI** (Cloud): Access to GPT-4, GPT-4 Turbo, and other models
+- **Claude** (Cloud): Access to Claude 3.5 Sonnet and other Anthropic models
 
 ## Key Highlights
 
+- **Multi-provider support** — Ollama (local), OpenAI, and Claude
 - **Multi-tab workspace** like modern IDEs with drag-and-drop reordering
-- **Local LLM processing** via Ollama — no data leaves your machine
+- **Local or cloud LLM processing** — you choose what fits your security needs
 - **Deep Burp integration** across Proxy, Repeater, and context menus
 - **Smart tab management** with automatic request-based naming
 - **Enhanced cancellation** with real-time feedback
@@ -57,7 +64,7 @@ Suite-o-llama is a professional-grade Burp Suite extension that seamlessly integ
 The extension integrates comprehensively across Burp Suite's ecosystem:
 
 ### Multi-Tab Integration
-Suite-o-llama v2.2.0 features a complete multi-tab interface that mimics Burp Suite's own workspace:
+Suite-o-llama features a complete multi-tab interface that mimics Burp Suite's own workspace:
 
 - **Main Tab**: Dedicated "Suite-o-llama" tab for comprehensive analysis and payload generation
 - **Repeater Sub-tabs**: "Suite-o-llama AI" tabs appear automatically for both request and response analysis
@@ -65,8 +72,9 @@ Suite-o-llama v2.2.0 features a complete multi-tab interface that mimics Burp Su
 - **Multiple Tabs**: Create, reorder, and manage analysis sessions independently
 - **Smart Tab Naming**: Automatic naming based on HTTP method and path
 - **Drag-and-Drop**: Reorder tabs freely for optimal workflow
-- **Settings Tab**: Dedicated configuration panel for Ollama connection and model settings
+- **Settings Panel**: Unified configuration for all AI providers (accessible via Requester/Settings tabs)
 - **Prompts Ready**: Core variables can be used in manual prompts across all Burp modules
+- **Provider Selection**: Switch between Ollama, OpenAI, and Claude in Settings
 
 ### Tab Management Features
 - **Close Button**: Each tab has its own close button (×)
@@ -104,21 +112,36 @@ The system uses smart templating with these variables (v2.2.0 updated):
 
 Suite-o-llama is pre-configured with two specialized Ollama models optimized for penetration testing:
 
-### Default Models
-- **Analysis Model**: `qwen2.5:7b-instruct` - For general security analysis
-- **Payload Model**: `qwen2.5-coder:7b` - For payload generation
-- **Custom Model Support**: While configured for these base models, advanced users can modify the source code to use higher-capacity models or different architectures. Customization requires manual compilation using the provided build script `suite.sh`.
+### Provider Settings
+
+**Ollama (Local):**
+- Endpoint: `http://127.0.0.1:11434` (configurable)
+- No API key required
+- Models: Any Ollama-compatible model
+
+**OpenAI (Cloud):**
+- API Key: Required (starts with `sk-`)
+- Base URL: `https://api.openai.com/v1` (configurable for compatibility)
+- Models: GPT-4, GPT-4 Turbo, o1, o3, GPT-3.5 Turbo
+
+**Claude (Cloud):**
+- API Key: Required
+- Base URL: `https://api.anthropic.com/v1` (configurable)
+- Models: Claude 3.5 Sonnet, Claude 3 Opus, Claude 3 Haiku
 
 ### Configuration Options
 - **Temperature**: 0.7 (configurable 0.0-2.0)
 - **Max Tokens**: 4096 (configurable 128-16384)
 - **Context Size**: 16,384 characters (configurable 1024-65536)
-- **Endpoint**: `http://127.0.0.1:11434` (customizable)
+- **Active Provider**: Select which AI provider to use
+- **Header Redaction**: Configurable redaction of sensitive headers
 
 ### Model Compatibility
-- Supports any Ollama-compatible model
-- Automatic model availability checking
-- One-click model refresh from Settings tab
+- **Ollama**: Supports any Ollama-compatible model
+- **OpenAI**: Supports GPT-4, GPT-4 Turbo, o1, o3, GPT-3.5 Turbo
+- **Claude**: Supports Claude 3.5 Sonnet, Claude 3 Opus, Claude 3 Haiku
+- Automatic model availability checking for each provider
+- One-click model refresh from Settings panel
 - Model switching between analysis/payload modes
 
 ## Local LLM Architecture
@@ -128,59 +151,86 @@ Suite-o-llama is pre-configured with two specialized Ollama models optimized for
 └───────────────────────────────┬─────────────────────────────┘
                                 │
 ┌───────────────────────────────▼─────────────────────────────┐
-│                Suite-o-llama Extension v2.2.1               │
+│                         Suite-o-llama                       │
+│                                                             │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │                     ProviderFactory                   │  │
+│  │           ┌─────────┐ ┌─────────┐ ┌─────────┐         │  │
+│  │           │ Ollama  │ │ OpenAI  │ │ Claude  │         │  │
+│  │           │ Client  │ │Provider │ │Provider │         │  │
+│  │           └─────────┘ └─────────┘ └─────────┘         │  │
+│  └───────────────────────────────────────────────────────┘  │
 │                                                             │
 │  ┌───────────────────────────────────────────────────────┐  │
 │  │                    MainTabPanel(s)                    │  │
 │  │                                                       │  │
-│  │  Tab 1            Tab 2             ...               │  │
-│  │  ├─ OllamaClient  ├─ OllamaClient                     │  │
-│  │  ├─ Autocomplete  ├─ Autocomplete                     │  │
-│  │  └─ Msg Editors   └─ Msg Editors                      │  │
+│  │     Tab 1            Tab 2             ...            │  │
+│  │     ├─ LLMProvider   ├─ LLMProvider                   │  │
+│  │     ├─ Autocomplete  ├─ Autocomplete                  │  │
+│  │     └─ Msg Editors   └─ Msg Editors                   │  │
 │  └───────────────────────────────────────────────────────┘  │
 └───────────────────────────────┬─────────────────────────────┘
                                 │
-┌───────────────────────────────▼─────────────────────────────┐
-│               Ollama HTTP API (localhost:11434)             │
-└───────────────────────────────┬─────────────────────────────┘
-                                │
-┌───────────────────────────────▼─────────────────────────────┐
-│                 Local Large Language Model                  │
-│               (Qwen2.5, LLaMA, etc.)                        │
-│                                                             │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │  ✓ All processing happens locally                     │  │
-│  │  ✓ No internet connection required                    │  │
-│  │  ✓ No API keys needed                                 │  │
-│  └───────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+        ┌───────────────────────┼───────────────────────────┐
+        │                       │                           │
+        ▼                       ▼                           ▼
+┌───────────────┐     ┌─────────────────┐     ┌─────────────────────┐
+│    Ollama     │     │     OpenAI      │     │      Claude         │
+│   (Local)     │     │    (Cloud)      │     │     (Cloud)         │
+│  :11434       │     │  api.openai.com │     │ api.anthropic.com   │
+└───────┬───────┘     └────────┬────────┘     └──────────┬──────────┘
+        │                      │                         │
+        ▼                      ▼                         ▼
+┌───────────────┐     ┌─────────────────┐     ┌─────────────────────┐
+│ Local LLM     │     │   GPT-4, o1,    │     │  Claude 3.5 Sonnet  │
+│ (Qwen2.5,     │     │   GPT-3.5 Turbo │     │  Claude 3 Opus      │
+│  LLaMA, etc.) │     │                 │     │  Claude 3 Haiku     │
+└───────────────┘     └─────────────────┘     └─────────────────────┘
 ```
 
 ## Installation Guide
 
 ### Prerequisites
+
+**For Ollama (Local):**
 - **Ollama Running**: Ensure Ollama is installed and running (`ollama serve`)
-- **Java**: openjdk21
 - **Models Available**: Pull required models:
   ```bash
   ollama pull qwen2.5:7b-instruct
   ollama pull qwen2.5-coder:7b
-- **Burp Suite**: Professional or Community Edition as of Jan 2026 (at the time of creating repository) or later.
+  ```
+
+**For OpenAI (Cloud):**
+- OpenAI API key from [platform.openai.com](https://platform.openai.com)
+- Billing enabled on your OpenAI account
+
+**For Claude (Cloud):**
+- Anthropic API key from [console.anthropic.com](https://console.anthropic.com)
+- API access enabled
+
+**General Requirements:**
+- **Java**: openjdk21 or later
+- **Burp Suite**: Professional (Apr 2026 or later Recommended)
 
 ### Method 1: Pre-compiled Installation recommended
 
-1. **Download**: Get stable release of `suite-o-llama.jar` from the [Releases page](https://github.com/BerserkiKun/suite-o-llama/releases)
+1. **Download**: Get stable release of `suite-o-llama.jar` from the [Releases page](https://github.com/VermaOps/suite-o-llama/releases)
 2. **Install in Burp**:
    ```bash
    Burp Suite → Extender → Extensions
    Click "Add" → Select the JAR file
    Make sure JAVA is selected
-3. **Load Dependencies**: Load any additional required JAR files if prompted
-4. **Configure**: Go to "Suite-o-llama Settings" tab and verify connection. Make sure your ollama is installed and up.
+3. **Configure Provider**:
+   - Go to "Suite-o-llama" → "Settings" tab
+   - Select your AI provider (Ollama, OpenAI, or Claude)
+   - Enter API key (if using OpenAI or Claude)
+   - Configure endpoint if needed
+   - Click "Test Connection" to verify
+4. **Load Models** (Ollama only):
    ```bash
-   # Check ollama health at http://localhost:11434 or http://127.0.0.1:11434
-   # if it is not running then try this to start ollama
+   # Check ollama health at http://localhost:11434
    ollama serve
+   ```
 
 ### Method 2: Custom Build Installation
 
@@ -188,7 +238,7 @@ For custom modifications:
 
 1. **Clone Repository**: 
    ```bash
-   git clone https://github.com/berserkikun/suite-o-llama.git
+   git clone https://github.com/VermaOps/suite-o-llama.git
    cd suite-o-llama
 
 2. **Modify Files**:
@@ -207,14 +257,15 @@ For custom modifications:
 ## Key Features
 
 ### Security & Privacy
-- **Local Processing**: All AI analysis happens on your machine via Ollama
+- **Provider Choice**: Use local Ollama for complete privacy or cloud providers for advanced models
 - **Header Redaction**: Automatic redaction of Authorization/Cookie headers before LLM processing (configurable)
 - **No Data Exfiltration**: Complete privacy with local LLM setup
 - **Sensitive Data Protection**: Configurable redaction of authentication tokens
-- **Offline Capable**: Works entirely without internet connection
+- **Offline Capable**: Works entirely without internet connection (ollama only)
 
 ### Productivity Tools
 - **Multi-tab Interface**: Work on multiple requests simultaneously
+- **Multi-Provider Support**: Switch between Ollama, OpenAI, and Claude seamlessly
 - **Saved Prompts**: Reusable prompt templates for common security tasks
 - **Prompt Manager**: GUI for organizing and managing prompt templates
 - **Batch Analysis**: Send multiple requests from context menu to separate tabs
@@ -236,15 +287,17 @@ For custom modifications:
 - **Request Editing**: Edit requests directly in AI workspace
 - **Server Integration**: Send requests to target from within extension
 - **Template Variables**: Comprehensive variable system for prompt engineering
+- **Model Listing**: Browse available models for each provider
 
 ## Usage Workflow
 
 ### Basic Analysis
-1. **Send to Suite-o-llama**: Right-click any request in Proxy/Repeater/Intruder
-2. **Multiple Requests**: Select multiple requests for batch processing
-3. **Tab Interface**: Each request opens in a new tab (first reuses initial empty tab)
-4. **Analyze**: Enter prompt or use default, click "Send to LLM"
-5. **Review**: Results appear in LLM Response area with timing metrics
+1. **Configure Provider**: Go to Settings → Select AI provider → Enter API key (if needed) → Test Connection
+2. **Send to Suite-o-llama**: Right-click any request in Proxy/Repeater/Intruder
+3. **Multiple Requests**: Select multiple requests for batch processing
+4. **Tab Interface**: Each request opens in a new tab (first reuses initial empty tab)
+5. **Analyze**: Enter prompt or use default, click "Send to LLM"
+6. **Review**: Results appear in LLM Response area with timing metrics
 
 ### Multi-tab Operations
 - **New Tab**: Click "+" button or send new request
@@ -260,6 +313,7 @@ For custom modifications:
 4. **Include Context**: Checkbox to include request in response analysis
 
 ### Advanced Features
+- **Switch Providers**: Change AI provider in Settings anytime
 - **Clear History**: "Clear" button removes only LLM responses
 - **Cancel Requests**: "Cancel" button stops ongoing LLM analysis
 - **Template Variables**: Use `{{variable}}` syntax in prompts
@@ -268,8 +322,8 @@ For custom modifications:
 ## Screenshots
 | | | |
 |:---:|:---:|:---:|
-| <img width="1470" height="852" alt="img4 burp" src="https://github.com/user-attachments/assets/a81528e5-d050-47f4-8c3a-0ab28ad49d01" /> | <img width="1470" height="781" alt="img5 burp" src="https://github.com/user-attachments/assets/feb03089-c456-4955-9bfa-1f4d1c69b139" /> | <img width="1437" height="851" alt="img6 urp" src="https://github.com/user-attachments/assets/d46badd5-d402-410e-8f27-dd230c9b1979" /> |
-| <img width="2940" height="1706" alt="img 7" src="https://github.com/user-attachments/assets/1c8e1cb0-c1a2-47c1-b0dc-a13a4c7ed1b6" /> | <img width="2940" height="1758" alt="img3" src="https://github.com/user-attachments/assets/3c81b90a-d142-4852-b3a6-725492624e1f" /> | |
+| <img width="2940" height="1774" alt="Screenshot 2026-05-16 at 11 42 20 AM" src="https://github.com/user-attachments/assets/593e7c39-fca8-477e-990e-66a3ba12acf2" /> | <img width="1470" height="781" alt="img5 burp" src="https://github.com/user-attachments/assets/feb03089-c456-4955-9bfa-1f4d1c69b139" /> | <img width="1437" height="851" alt="img6 urp" src="https://github.com/user-attachments/assets/d46badd5-d402-410e-8f27-dd230c9b1979" /> |
+| <img width="2940" height="1706" alt="img 7" src="https://github.com/user-attachments/assets/1c8e1cb0-c1a2-47c1-b0dc-a13a4c7ed1b6" /> | <img width="2940" height="1774" alt="Screenshot 2026-05-16 at 11 40 18 AM" src="https://github.com/user-attachments/assets/8e79e29c-03b6-4d38-9b21-ae4d7c78c9e4" /> | |
 
 
 ## Support Development
@@ -289,7 +343,7 @@ Your support helps maintain the project and add new features.
 Found a bug? Have a feature request?
 - **Bug Reports**: Include Burp version, Ollama version, and reproduction steps
 - **Feature Requests**: Describe use case and expected behavior
-- **Security Issues**: Report privately on Discord DM - @BerserkiKun
+- **Security Issues**: Report privately on Discord DM - @VermaOps
  
 ## Community & Feedback
 
@@ -299,11 +353,11 @@ Community feedback is welcome. The local-first design ensures you can use Suite-
 
 <div align="center">
 
-**Built with ❤️ by [BerserkiKun](https://github.com/berserkikun)**
+**Built with ❤️ by [VermaOps](https://github.com/VermaOps)**
 
-[![GitHub Stars](https://img.shields.io/github/stars/berserkikun/suite-o-llama?style=social)](https://github.com/berserkikun/suite-o-llama/stargazers)
-[![GitHub Issues](https://img.shields.io/github/issues/berserkikun/suite-o-llama)](https://github.com/berserkikun/suite-o-llama/issues)
-[![GitHub Forks](https://img.shields.io/github/forks/berserkikun/suite-o-llama?style=social)](https://github.com/berserkikun/suite-o-llama/network/members)
+[![GitHub Stars](https://img.shields.io/github/stars/VermaOps/suite-o-llama?style=social)](https://github.com/VermaOps/suite-o-llama/stargazers)
+[![GitHub Issues](https://img.shields.io/github/issues/VermaOps/suite-o-llama)](https://github.com/VermaOps/suite-o-llama/issues)
+[![GitHub Forks](https://img.shields.io/github/forks/VermaOps/suite-o-llama?style=social)](https://github.com/VermaOps/suite-o-llama/network/members)
 
 **⭐ Star this repo if you find it useful!**
 
